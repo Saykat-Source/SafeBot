@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>BiasGuard Admin Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #f4f6fb;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 900px;
+            margin: 40px auto;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            padding: 24px 18px 18px 18px;
+        }
+        h2 {
+            text-align: center;
+            color: #0055a5;
+            margin-bottom: 8px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #333;
+            font-size: 1em;
+            margin-bottom: 18px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #f9fafc;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        th, td {
+            padding: 10px 8px;
+            text-align: left;
+            border-bottom: 1px solid #e0e6ed;
+            font-size: 1em;
+        }
+        th {
+            background: #e3f2fd;
+            color: #0055a5;
+        }
+        tr:last-child td {
+            border-bottom: none;
+        }
+        .issues {
+            color: #c62828;
+            font-weight: bold;
+        }
+        .no-issues {
+            color: #388e3c;
+        }
+        @media (max-width: 700px) {
+            .container {
+                max-width: 98vw;
+                margin: 8px;
+                padding: 10px 4px 8px 4px;
+            }
+            table, thead, tbody, th, td, tr {
+                display: block;
+            }
+            thead tr {
+                display: none;
+            }
+            tr {
+                margin-bottom: 16px;
+                background: #fff;
+                border-radius: 8px;
+                box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+                padding: 8px;
+            }
+            td {
+                border: none;
+                position: relative;
+                padding-left: 50%;
+                min-height: 32px;
+            }
+            td:before {
+                position: absolute;
+                left: 12px;
+                top: 10px;
+                width: 45%;
+                white-space: nowrap;
+                font-weight: bold;
+                color: #0055a5;
+            }
+            td:nth-of-type(1):before { content: "Timestamp"; }
+            td:nth-of-type(2):before { content: "Prompt"; }
+            td:nth-of-type(3):before { content: "Response"; }
+            td:nth-of-type(4):before { content: "Issues"; }
+            td:nth-of-type(5):before { content: "Model"; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>BiasGuard Admin Dashboard</h2>
+        <div class="subtitle">Review all chatbot interactions and detected issues</div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Timestamp</th>
+                    <th>Prompt</th>
+                    <th>Response</th>
+                    <th>Issues</th>
+                    <th>Model</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in logs %}
+                <tr>
+                    <td>{{ log[0] }}</td>
+                    <td>{{ log[1] }}</td>
+                    <td>{{ log[2] }}</td>
+                    <td>
+                        {% if log[3] %}
+                            <span class="issues">{{ log[3] }}</span>
+                        {% else %}
+                            <span class="no-issues">None</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ log[4] }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>
