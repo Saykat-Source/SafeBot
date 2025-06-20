@@ -9,4 +9,4 @@ jinja2
 aiofiles
 openai
 h11
-
+requests
