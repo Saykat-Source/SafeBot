@@ -10,3 +10,5 @@ aiofiles
 openai
 h11
 requests
+python-multipart
+
