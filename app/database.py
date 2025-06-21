@@ -25,6 +25,12 @@ def log_interaction(prompt, response, issues, model):
     c.execute('''
         INSERT INTO logs (timestamp, prompt, response, issues, model)
         VALUES (?, ?, ?, ?, ?)
-    ''', (datetime.now().isoformat(), prompt, response, "; ".join(issues), model))
+    ''', (
+        datetime.now().isoformat(),
+        prompt,
+        response,
+        "; ".join(issues) if isinstance(issues, list) else str(issues),
+        model
+    ))
     conn.commit()
     conn.close()
