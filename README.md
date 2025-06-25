@@ -1,21 +1,75 @@
-In your README.md, add a section like:
+# SafeBot – Personal Finance & Life Coach Chatbot
 
-## API Keys
-
-This project requires an OpenAI API key.  
-**Do not share your API key publicly.**  
-Set your key as an environment variable before running the app:
-
-```bash
-export OPENAI_API_KEY=your-key-here
+SafeBot is an AI-powered personal finance and lifestyle coach designed for Australians. It helps users manage their weekly budgets, track expenses (including Google Pay, Apple Pay, and credit cards), and get personalized, motivational advice for daily life—all through a friendly chat interface.
 
 ---
 
-### **5. Remove Any Existing Keys from Git History**
+## ✨ Features
 
-If you ever committed your API key by mistake, let me know and I’ll show you how to remove it from your git history.
+- **Conversational AI:** Proactive, supportive, and sometimes strict advice tailored to your lifestyle and spending habits.
+- **No-Code Prompt Editor:** Easily update the bot’s personality and instructions from a web admin UI—no coding required!
+- **Expense Tracking:** Log expenses by category and payment method (Google Pay, Apple Pay, Credit Card, etc.).
+- **Budget Management:** Set and update your weekly budgets for meals, travel, clothes, and more.
+- **Modern Responsive UI:** Built with React (Vite) for a smooth experience on any device.
+- **FastAPI Backend:** Secure, scalable backend with OpenAI GPT-4/4o integration.
 
 ---
 
-**Let me know if you want a sample `.gitignore` or help updating your README!**  
-You’re doing everything right to keep your project secure and professional.
+## 🚀 Screenshots
+
+*(Add screenshots of your UI and prompt editor here!)*
+
+---
+
+## 🛠️ Getting Started
+
+### Prerequisites
+
+- Node.js & npm
+- Python 3.8+
+- OpenAI API key
+
+### Installation
+
+1. **Clone the repo:**
+   ```bash
+   git clone https://github.com/Saykat-Source/SafeBot.git
+   cd SafeBot
+
+   2.Backend setup:
+bash
+Copy Code
+cd backend
+python -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+
+3.Frontend setup:
+bash
+Copy Code
+cd ../frontend
+npm install
+Start the servers:
+Backend:
+bash
+Copy Code
+uvicorn main:app --reload
+Frontend:
+bash
+Copy Code
+npm run dev
+💡 Usage
+Visit http://localhost:5173/ for the main app.
+Visit http://localhost:5173/admin to edit the chatbot’s prompt (admin only).
+🧰 Tech Stack
+Frontend: React (Vite)
+Backend: FastAPI (Python)
+AI: OpenAI GPT-4/4o
+🤝 Contributing
+Pull requests are welcome! For major changes, please open an issue first to discuss what you would like to change.
+
+📄 License
+MIT
+
+📬 Contact
+Saykat Ghosh – [saykatkumar97@gmail.com]
