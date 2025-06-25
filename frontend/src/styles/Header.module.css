@@ -1,0 +1,44 @@
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+.menu {
+  font-size: 1.5rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.title {
+  font-weight: bold;
+  font-size: 1.2rem;
+  color: #1a237e;
+}
+
+.actions {
+  display: flex;
+  gap: 12px;
+}
+
+.icon {
+  font-size: 1.3rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+@media (max-width: 600px) {
+  .header {
+    padding: 10px 6px;
+  }
+  .title {
+    font-size: 1rem;
+  }
+  .menu, .icon {
+    font-size: 1.2rem;
+  }
+}

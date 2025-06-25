@@ -1,0 +1,55 @@
+.nav {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 10px 0 8px 0;
+  background: #f5f7fa;
+  box-shadow: 0 -2px 8px rgba(30, 136, 229, 0.04);
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100vw;
+  max-width: 430px; /* Match your .app-container */
+  z-index: 100;
+}
+
+.tab {
+  background: none;
+  border: none;
+  font-size: 1.4rem;
+  color: #1976d2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  padding: 0 4px;
+  transition: color 0.2s;
+}
+
+.tab span {
+  font-size: 0.8rem;
+  margin-top: 2px;
+}
+
+.tab:hover,
+.tab:focus {
+  color: #0d47a1;
+}
+
+@media (max-width: 600px) {
+  .nav {
+    padding: 6px 0 4px 0;
+  }
+  .tab {
+    font-size: 1.1rem;
+    padding: 0 2px;
+  }
+  .tab span {
+    font-size: 0.7rem;
+  }
+}
+.active {
+  color: #0d47a1;
+  font-weight: bold;
+}

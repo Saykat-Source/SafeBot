@@ -2,180 +2,48 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>BankBot – Commonwealth Bank Virtual Assistant</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <style>
-        body {
-            font-family: 'Segoe UI', Arial, sans-serif;
-            background: #f4f6fb;
-            margin: 0;
-            padding: 0;
-        }
-        .container {
-            max-width: 480px;
-            margin: 40px auto;
-            background: #fff;
-            border-radius: 12px;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
-            padding: 24px 18px 12px 18px;
-        }
-        h2 {
-            text-align: center;
-            color: #0055a5;
-            margin-bottom: 8px;
-        }
-        .subtitle {
-            text-align: center;
-            color: #333;
-            font-size: 1em;
-            margin-bottom: 18px;
-        }
-        .chat-box {
-            height: 320px;
-            overflow-y: auto;
-            background: #f9fafc;
-            border-radius: 8px;
-            padding: 12px;
-            margin-bottom: 16px;
-            border: 1px solid #e0e6ed;
-        }
-        .message {
-            margin: 10px 0;
-            display: flex;
-            flex-direction: column;
-        }
-        .user {
-            align-items: flex-end;
-        }
-        .user .bubble {
-            background: #e3f2fd;
-            color: #0055a5;
-            align-self: flex-end;
-        }
-        .bot {
-            align-items: flex-start;
-        }
-        .bot .bubble {
-            background: #f1f8e9;
-            color: #333;
-            align-self: flex-start;
-        }
-        .bubble {
-            padding: 10px 16px;
-            border-radius: 18px;
-            max-width: 80%;
-            font-size: 1em;
-            margin-bottom: 2px;
-        }
-        .issues {
-            color: #c62828;
-            font-size: 0.95em;
-            margin-top: 2px;
-            margin-bottom: 2px;
-        }
-        .input-row {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 8px;
-        }
-        input[type="text"] {
-            flex: 1;
-            padding: 10px;
-            border-radius: 8px;
-            border: 1px solid #b0bec5;
-            font-size: 1em;
-        }
-        select {
-            padding: 8px;
-            border-radius: 8px;
-            border: 1px solid #b0bec5;
-            font-size: 1em;
-        }
-        button {
-            background: #0055a5;
-            color: #fff;
-            border: none;
-            border-radius: 8px;
-            padding: 10px 18px;
-            font-size: 1em;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        button:hover {
-            background: #003c7e;
-        }
-        @media (max-width: 600px) {
-            .container {
-                max-width: 98vw;
-                margin: 8px;
-                padding: 10px 4px 8px 4px;
-            }
-            .chat-box {
-                height: 220px;
-            }
-        }
-    </style>
+    <title>FinPal – Your AI Finance Assistant</title>
+    <link rel="stylesheet" href="/static/chat.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="container">
-        <h2>BankBot</h2>
-        <div class="subtitle">Commonwealth Bank Virtual Assistant</div>
-        <div style="text-align:center; margin-bottom:10px;">
-            <label for="model">Model:</label>
-            <select id="model">
-                <option value="openai">OpenAI</option>
-                <option value="gemma">Gemma</option>
-            </select>
-        </div>
-        <div class="chat-box" id="chat-box"></div>
-        <form id="chat-form" autocomplete="off">
-            <div class="input-row">
-                <input type="text" id="prompt" placeholder="Type your message..." required autofocus>
-                <button type="submit">Send</button>
+    <!-- Abstract SVG background shapes -->
+    <svg class="bg-shape bg-shape-1" viewBox="0 0 400 400"><circle cx="200" cy="200" r="200" fill="#4f8cff" fill-opacity="0.18"/></svg>
+    <svg class="bg-shape bg-shape-2" viewBox="0 0 400 400"><ellipse cx="200" cy="200" rx="180" ry="120" fill="#22c55e" fill-opacity="0.13"/></svg>
+    <div class="chat-glass">
+        <!-- Header -->
+        <header class="chat-header">
+            <div class="assistant-avatar">💸</div>
+            <div class="assistant-info">
+                <h1>FinPal</h1>
+                <div class="assistant-desc">Your Personal AI Finance Assistant</div>
             </div>
+        </header>
+
+        <!-- Chat Area -->
+        <main class="chat-box" id="chat-window">
+            <!-- Messages will be dynamically inserted here -->
+        </main>
+        <div id="typing-indicator" class="typing-indicator" style="display:none;">💸 FinPal is typing...</div>
+
+        <!-- Quick Action Buttons -->
+        <section class="quick-actions">
+            <button class="quick-btn food" data-category="Food">🍔 Food</button>
+            <button class="quick-btn transport" data-category="Transport">🚗 Transport</button>
+            <button class="quick-btn grocery" data-category="Grocery">🛒 Grocery</button>
+            <button class="quick-btn bills" data-category="Bills">💡 Bills</button>
+            <button class="quick-btn savings" data-category="Savings">💰 Savings</button>
+        </section>
+
+        <!-- Input Row -->
+        <form id="chat-form" autocomplete="off" class="input-row">
+            <button type="button" id="voice-btn" title="Voice Input">🎤</button>
+            <input type="text" id="user-input" placeholder="Ask me anything about your finances..." autocomplete="off" />
+            <button type="submit">Send</button>
         </form>
+        <div id="limit-message" class="limit-message" style="display:none;"></div>
+        <button id="dark-mode-toggle" title="Toggle dark mode">🌙</button>
     </div>
-    <script>
-        const chatBox = document.getElementById('chat-box');
-        const chatForm = document.getElementById('chat-form');
-        const promptInput = document.getElementById('prompt');
-        const modelSelect = document.getElementById('model');
-
-        function addMessage(text, sender, issues=[]) {
-            const msgDiv = document.createElement('div');
-            msgDiv.className = 'message ' + sender;
-            const bubble = document.createElement('div');
-            bubble.className = 'bubble';
-            bubble.textContent = text;
-            msgDiv.appendChild(bubble);
-            if (issues && issues.length > 0) {
-                const issuesDiv = document.createElement('div');
-                issuesDiv.className = 'issues';
-                issuesDiv.textContent = "⚠️ Issues detected: " + issues.join(', ');
-                msgDiv.appendChild(issuesDiv);
-            }
-            chatBox.appendChild(msgDiv);
-            chatBox.scrollTop = chatBox.scrollHeight;
-        }
-
-        chatForm.onsubmit = async (e) => {
-            e.preventDefault();
-            const prompt = promptInput.value.trim();
-            if (!prompt) return;
-            const model = modelSelect.value;
-            addMessage(prompt, 'user');
-            promptInput.value = '';
-            addMessage('Thinking...', 'bot');
-            const res = await fetch('/chat/send', {
-                method: 'POST',
-                body: new URLSearchParams({prompt, model}),
-                headers: {'Content-Type': 'application/x-www-form-urlencoded'}
-            });
-            const data = await res.json();
-            // Remove the "Thinking..." message
-            chatBox.removeChild(chatBox.lastChild);
-            addMessage(data.response, 'bot', data.issues);
-        };
-    </script>
+    <script src="/static/chat.js"></script>
 </body>
 </html>
