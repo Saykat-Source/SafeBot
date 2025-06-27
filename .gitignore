@@ -1,1 +1,18 @@
 biasguard_logs.db
+# Ignore Python cache and compiled files
+__pycache__/
+*.pyc
+
+# Ignore virtual environment
+venv/
+
+# Ignore log and CSV files
+*.log
+*.csv
+
+# Ignore environment files
+.env
+
+# Ignore your database file
+biasguard_logs.db
+

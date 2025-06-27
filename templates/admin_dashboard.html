@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Dashboard - Prompt Review Logs</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f5f5f5; }
+        h2 { color: #d0001b; }
+        table { border-collapse: collapse; width: 100%; background: #fff; }
+        th, td { border: 1px solid #ccc; padding: 8px; }
+        th { background: #d0001b; color: #fff; }
+        tr:nth-child(even) { background: #f9f9f9; }
+        .flagged { background: #ffe0e0; }
+    </style>
+</head>
+<body>
+    <h2>Admin Dashboard: Prompt Review Logs</h2>
+    <table>
+        <tr>
+            <th>Timestamp</th>
+            <th>User</th>
+            <th>Prompt</th>
+            <th>Keyword Bias</th>
+            <th>Keyword Reason</th>
+            <th>AI Bias</th>
+            <th>AI Reason</th>
+        </tr>
+        {% for row in logs %}
+        <tr class="{% if row[3] == 'No' or row[5] == 'No' %}flagged{% endif %}">
+            <td>{{ row[0] }}</td>
+            <td>{{ row[1] }}</td>
+            <td style="white-space: pre-wrap;">{{ row[2].replace('\\n', '\n') }}</td>
+            <td>{{ row[3] }}</td>
+            <td>{{ row[4] }}</td>
+            <td>{{ row[5] }}</td>
+            <td>{{ row[6] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    <form method="post" action="/logout">
+      <button type="submit">Logout</button>
+    </form>
+</body>
+</html>

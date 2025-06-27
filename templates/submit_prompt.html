@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Submit System Prompt</title>
+</head>
+<body>
+<h2>Submit a New System Prompt</h2>
+<form method="post" action="/submit_prompt">
+  <textarea name="prompt" rows="8" cols="60" required></textarea><br>
+  <button type="submit">Submit Prompt</button>
+</form>
+{% if message %}
+  <p>{{ message }}</p>
+{% endif %}
+<form method="post" action="/logout">
+  <button type="submit">Logout</button>
+</form>
+</body>
+</html>
