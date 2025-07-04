@@ -11,30 +11,7 @@ import './App.css';
 import PromptEditor from "./PromptEditor";
 import PromptPractice from './components/PromptPractice';
 
-// Dummy components for each page (replace with your real content as you build)
-function HomePage() {
-  return (
-    <>
-      <AIGreeting />
-      <BalanceCard />
-      <QuickStats />
-      <SpendingBreakdown />
-      <QuickActions />
-    </>
-  );
-}
-function StatsPage() {
-  return <div style={{ padding: 32 }}>📊 Stats Page (Coming Soon)</div>;
-}
-function ChatPage() {
-  return <ChatArea />;
-}
-function GoalsPage() {
-  return <div style={{ padding: 32 }}>🎯 Goals Page (Coming Soon)</div>;
-}
-function ProfilePage() {
-  return <div style={{ padding: 32 }}>👤 Profile Page (Coming Soon)</div>;
-}
+// ... (dummy components as before)
 
 function App() {
   return (
@@ -42,12 +19,12 @@ function App() {
       <div className="app-container">
         <Header />
         <Routes>
-          <Route path="/" element={<HomePage />} />
+          <Route path="/" element={<PromptPractice />} /> {/* <-- Prompt Checker is now the home page */}
           <Route path="/stats" element={<StatsPage />} />
           <Route path="/chat" element={<ChatPage />} />
           <Route path="/goals" element={<GoalsPage />} />
           <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/admin" element={<PromptEditor />} /> {/* <-- Admin route for prompt editing */}
+          <Route path="/admin" element={<PromptEditor />} />
           <Route path="/practice" element={<PromptPractice />} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
