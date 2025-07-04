@@ -18,7 +18,7 @@ function PromptPractice() {
     setLoading(true);
     setResult(null);
     try {
-      const res = await axios.post("http://localhost:8000/check_prompt", { prompt });
+      const res = await axios.post("https://safebot-r4i0.onrender.com/check_prompt", { prompt });
       setResult(res.data);
     } catch (error) {
       setResult({ result: "error", reason: "Could not connect to the server." });
