@@ -4,13 +4,12 @@ from pydantic import BaseModel
 from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from starlette.middleware.sessions import SessionMiddleware
+from fastapi.staticfiles import StaticFiles
 import os
 import csv
 import json
 from openai import OpenAI
 from datetime import datetime
-
-
 
 # --- Prompt Template ---
 TEMPLATE_PATH = "prompt_template.txt"
@@ -151,13 +150,14 @@ def generate_life_coach_prompt(
     )
     return prompt
 
-# --- Pydantic Model ---
+# --- Pydantic Models ---
 class ChatRequest(BaseModel):
     message: str
-# Define your request model here
+
 class PromptCheckRequest(BaseModel):
     prompt: str
-# --- Endpoints ---
+
+# --- API Endpoints ---
 
 @app.post("/chat/send")
 async def chat_send(request: ChatRequest):
@@ -214,101 +214,6 @@ async def update_prompt(request: Request):
         f.write(new_prompt)
     return {"message": "Prompt updated successfully!"}
 
-# --- Registration and Login ---
-
-@app.get("/", response_class=HTMLResponse)
-def login_page(request: Request):
-    return templates.TemplateResponse("login.html", {"request": request})
-
-@app.post("/login", response_class=HTMLResponse)
-async def login(request: Request, username: str = Form(...), password: str = Form(...)):
-    users = load_users()
-    if username in users and users[username]["password"] == password:
-        request.session["user"] = username
-        return RedirectResponse("/welcome", status_code=302)
-    return templates.TemplateResponse("login.html", {"request": request, "error": "Invalid username or password."})
-
-@app.get("/register", response_class=HTMLResponse)
-def register_page(request: Request):
-    return templates.TemplateResponse("register.html", {"request": request})
-
-@app.post("/register", response_class=HTMLResponse)
-async def register(request: Request, username: str = Form(...), password: str = Form(...)):
-    users = load_users()
-    if username in users:
-        return templates.TemplateResponse("register.html", {"request": request, "error": "Username already exists."})
-    users[username] = {"password": password, "role": "engineer"}  # Default role
-    save_users(users)
-    return templates.TemplateResponse("register.html", {"request": request, "message": "Registration successful! You can now log in."})
-
-@app.get("/welcome", response_class=HTMLResponse)
-def welcome(request: Request):
-    user = request.session.get("user")
-    if not user:
-        return RedirectResponse("/", status_code=302)
-    return HTMLResponse(f"<h2>Welcome, {user}!</h2>")
-
-@app.get("/submit_prompt", response_class=HTMLResponse)
-def submit_prompt_page(request: Request):
-    user = request.session.get("user")
-    if not user:
-        return RedirectResponse("/", status_code=302)
-    return templates.TemplateResponse("submit_prompt.html", {"request": request, "user": user})
-
-@app.post("/submit_prompt", response_class=HTMLResponse)
-async def submit_prompt(request: Request, prompt: str = Form(...)):
-    user = request.session.get("user")
-    if not user:
-        return RedirectResponse("/", status_code=302)
-    # Keyword bias check
-    keyword_ok, keyword_reason = is_prompt_unbiased_keyword(prompt)
-    # AI bias check
-    try:
-        ai_ok, ai_reason = is_prompt_unbiased_ai(prompt, client)
-    except Exception as e:
-        ai_ok, ai_reason = False, f"AI check error: {e}"
-
-    # Log to CSV
-    with open("prompt_review_log.csv", "a", newline='', encoding='utf-8') as csvfile:
-        writer = csv.writer(csvfile)
-        writer.writerow([
-            datetime.now().isoformat(),
-            user,
-            prompt.replace('\n', '\\n'),
-            "No" if not keyword_ok else "Yes",
-            keyword_reason,
-            "No" if not ai_ok else "Yes",
-            ai_reason
-        ])
-    # Show result to user
-    message = "Prompt submitted! "
-    if not keyword_ok:
-        message += f"Keyword bias detected: {keyword_reason} "
-    if not ai_ok:
-        message += f"AI bias detected: {ai_reason}"
-    if keyword_ok and ai_ok:
-        message += "No bias detected."
-    return templates.TemplateResponse("submit_prompt.html", {"request": request, "user": user, "message": message})
-
-@app.get("/admin", response_class=HTMLResponse)
-def admin_dashboard(request: Request):
-    user = request.session.get("user")
-    users = load_users()
-    if not user or users.get(user, {}).get("role") != "admin":
-        return RedirectResponse("/", status_code=302)
-    logs = []
-    try:
-        with open("prompt_review_log.csv", "r", encoding="utf-8") as csvfile:
-            reader = csv.reader(csvfile)
-            logs = list(reader)
-    except FileNotFoundError:
-        pass
-    return templates.TemplateResponse("admin_dashboard.html", {"request": request, "logs": logs})
-
-@app.post("/logout")
-def logout(request: Request):
-    request.session.clear()
-    return RedirectResponse("/", status_code=302)
 @app.post("/check_prompt")
 async def check_prompt(request: PromptCheckRequest):
     prompt = request.prompt
@@ -321,9 +226,27 @@ async def check_prompt(request: PromptCheckRequest):
 
     # Log the prompt and result (append to a CSV or database)
     with open("prompt_practice_log.csv", "a") as f:
-       f.write(f"{datetime.now()},{prompt},{result},{reason}\n")
+        f.write(f"{datetime.now()},{prompt},{result},{reason}\n")
 
     return {
         "result": result,
         "reason": reason
     }
+
+# --- Serve React App at Root and All Unmatched Routes ---
+
+# Serve static files (JS, CSS, etc.)
+app.mount("/static", StaticFiles(directory="static/react"), name="static")
+
+# Serve React index.html at root
+@app.get("/", response_class=HTMLResponse)
+async def serve_react():
+    return FileResponse("static/react/index.html")
+
+# Serve React for all unmatched routes (so React Router works)
+@app.get("/{full_path:path}", response_class=HTMLResponse)
+async def serve_react_catchall(full_path: str):
+    file_path = os.path.join("static/react", full_path)
+    if os.path.exists(file_path) and not os.path.isdir(file_path):
+        return FileResponse(file_path)
+    return FileResponse("static/react/index.html")
