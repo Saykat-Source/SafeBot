@@ -1,24 +1,37 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Form
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from fastapi.responses import FileResponse
-import os
-import csv
-from openai import OpenAI
-from datetime import datetime
-from fastapi import Request, Form
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from starlette.middleware.sessions import SessionMiddleware
-from fastapi import Depends
+import os
+import csv
+import json
+from openai import OpenAI
+from datetime import datetime
+
+
 
 # --- Prompt Template ---
 TEMPLATE_PATH = "prompt_template.txt"
 with open(TEMPLATE_PATH, "r", encoding="utf-8") as f:
     prompt_template = f.read()
-print("DEBUG: Loaded prompt template:\n", prompt_template)  # Confirm template is loaded
+print("DEBUG: Loaded prompt template:\n", prompt_template)
 
-# --- Example User Data ---
+# --- User Data Files ---
+USERS_FILE = "users.json"
+
+def load_users():
+    if os.path.exists(USERS_FILE):
+        with open(USERS_FILE, "r") as f:
+            return json.load(f)
+    return {}
+
+def save_users(users):
+    with open(USERS_FILE, "w") as f:
+        json.dump(users, f)
+
+# --- Example User Data (for demo user) ---
 user_budgets = {
     "demo_user": {
         "meals_budget": 100,
@@ -31,7 +44,6 @@ user_budgets = {
         "other_spent": 5
     }
 }
-
 user_profiles = {
     "demo_user": {
         "name": "Alex",
@@ -40,7 +52,6 @@ user_profiles = {
         "preferences": "Healthy food, public transport"
     }
 }
-
 recent_activities = {
     "demo_user": "Last week, Alex overspent on travel. Saved $20 on meals."
 }
@@ -49,12 +60,6 @@ recent_activities = {
 app = FastAPI()
 app.add_middleware(SessionMiddleware, secret_key="supersecret")
 templates = Jinja2Templates(directory="templates")
-
-users = {
-    "alice": {"password": "alicepass", "role": "engineer"},
-    "bob": {"password": "bobpass", "role": "tester"},
-    "admin": {"password": "adminpass", "role": "admin"}
-}
 
 app.add_middleware(
     CORSMiddleware,
@@ -149,7 +154,9 @@ def generate_life_coach_prompt(
 # --- Pydantic Model ---
 class ChatRequest(BaseModel):
     message: str
-
+# Define your request model here
+class PromptCheckRequest(BaseModel):
+    prompt: str
 # --- Endpoints ---
 
 @app.post("/chat/send")
@@ -170,20 +177,6 @@ async def chat_send(request: ChatRequest):
         recent_activity
     )
 
-    # 1. Keyword-based bias check
-    ok, reason = is_prompt_unbiased_keyword(prompt)
-    if not ok:
-        log_prompt(prompt, "biased (keyword)", reason, user_id)
-        return {"reply": f"Sorry, your request could not be processed: {reason}"}
-
-    # 2. AI-powered bias check
-    ok, reason = is_prompt_unbiased_ai(prompt, client)
-    if not ok:
-        log_prompt(prompt, "biased (AI)", reason, user_id)
-        return {"reply": f"Sorry, your request could not be processed: {reason}"}
-
-    # 3. If unbiased, log and send to OpenAI for response
-    log_prompt(prompt, "unbiased", "", user_id)
     try:
         response_obj = client.chat.completions.create(
             model="gpt-4",
@@ -191,6 +184,19 @@ async def chat_send(request: ChatRequest):
         )
         ai_reply = response_obj.choices[0].message.content
         print("AI response:", ai_reply)  # Debug print
+
+        # 1. Keyword-based bias check on AI reply
+        ok_keyword, reason_keyword = is_prompt_unbiased_keyword(ai_reply)
+        if not ok_keyword:
+            log_prompt(prompt, "biased (keyword)", reason_keyword, user_id)
+        # 2. AI-powered bias check on AI reply
+        ok_ai, reason_ai = is_prompt_unbiased_ai(ai_reply, client)
+        if not ok_ai:
+            log_prompt(prompt, "biased (AI)", reason_ai, user_id)
+        # 3. If unbiased, log as usual
+        if ok_keyword and ok_ai:
+            log_prompt(prompt, "unbiased", "", user_id)
+
         return {"reply": ai_reply}
     except Exception as e:
         print("Error from OpenAI:", e)
@@ -208,17 +214,32 @@ async def update_prompt(request: Request):
         f.write(new_prompt)
     return {"message": "Prompt updated successfully!"}
 
+# --- Registration and Login ---
+
 @app.get("/", response_class=HTMLResponse)
 def login_page(request: Request):
     return templates.TemplateResponse("login.html", {"request": request})
 
 @app.post("/login", response_class=HTMLResponse)
 async def login(request: Request, username: str = Form(...), password: str = Form(...)):
+    users = load_users()
     if username in users and users[username]["password"] == password:
         request.session["user"] = username
         return RedirectResponse("/welcome", status_code=302)
-    # If login fails, show error
     return templates.TemplateResponse("login.html", {"request": request, "error": "Invalid username or password."})
+
+@app.get("/register", response_class=HTMLResponse)
+def register_page(request: Request):
+    return templates.TemplateResponse("register.html", {"request": request})
+
+@app.post("/register", response_class=HTMLResponse)
+async def register(request: Request, username: str = Form(...), password: str = Form(...)):
+    users = load_users()
+    if username in users:
+        return templates.TemplateResponse("register.html", {"request": request, "error": "Username already exists."})
+    users[username] = {"password": password, "role": "engineer"}  # Default role
+    save_users(users)
+    return templates.TemplateResponse("register.html", {"request": request, "message": "Registration successful! You can now log in."})
 
 @app.get("/welcome", response_class=HTMLResponse)
 def welcome(request: Request):
@@ -241,7 +262,7 @@ async def submit_prompt(request: Request, prompt: str = Form(...)):
         return RedirectResponse("/", status_code=302)
     # Keyword bias check
     keyword_ok, keyword_reason = is_prompt_unbiased_keyword(prompt)
-    # AI bias check (replace 'client' with your OpenAI client variable)
+    # AI bias check
     try:
         ai_ok, ai_reason = is_prompt_unbiased_ai(prompt, client)
     except Exception as e:
@@ -268,17 +289,41 @@ async def submit_prompt(request: Request, prompt: str = Form(...)):
     if keyword_ok and ai_ok:
         message += "No bias detected."
     return templates.TemplateResponse("submit_prompt.html", {"request": request, "user": user, "message": message})
+
 @app.get("/admin", response_class=HTMLResponse)
 def admin_dashboard(request: Request):
     user = request.session.get("user")
+    users = load_users()
     if not user or users.get(user, {}).get("role") != "admin":
         return RedirectResponse("/", status_code=302)
     logs = []
     try:
         with open("prompt_review_log.csv", "r", encoding="utf-8") as csvfile:
-            import csv
             reader = csv.reader(csvfile)
             logs = list(reader)
     except FileNotFoundError:
         pass
     return templates.TemplateResponse("admin_dashboard.html", {"request": request, "logs": logs})
+
+@app.post("/logout")
+def logout(request: Request):
+    request.session.clear()
+    return RedirectResponse("/", status_code=302)
+@app.post("/check_prompt")
+async def check_prompt(request: PromptCheckRequest):
+    prompt = request.prompt
+    # Run your bias checks
+    ok_keyword, reason_keyword = is_prompt_unbiased_keyword(prompt)
+    ok_ai, reason_ai = is_prompt_unbiased_ai(prompt, client)
+    is_biased = not (ok_keyword and ok_ai)
+    reason = reason_keyword if not ok_keyword else reason_ai if not ok_ai else ""
+    result = "biased" if is_biased else "unbiased"
+
+    # Log the prompt and result (append to a CSV or database)
+    with open("prompt_practice_log.csv", "a") as f:
+       f.write(f"{datetime.now()},{prompt},{result},{reason}\n")
+
+    return {
+        "result": result,
+        "reason": reason
+    }

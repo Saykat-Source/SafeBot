@@ -1,9 +1,7 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
     <title>Register - Bank Chatbot</title>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,700&display=swap">
     <style>
         body { background: #f5f5f5; font-family: 'Roboto', sans-serif; }
         .container { max-width: 400px; margin: 80px auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px #0001; padding: 32px; }
@@ -17,9 +15,12 @@
 </head>
 <body>
     <div class="container">
-        <h2>Register for Bank Chatbot</h2>
+        <h2>Register</h2>
         {% if error %}
             <div class="error">{{ error }}</div>
+        {% endif %}
+        {% if message %}
+            <div class="message">{{ message }}</div>
         {% endif %}
         <form method="post" action="/register">
             <input type="text" name="username" placeholder="Username" required>
@@ -27,7 +28,7 @@
             <button type="submit">Register</button>
         </form>
         <div class="login-link">
-            <a href="/login">Already have an account? Login</a>
+            <a href="/">Already have an account? Login</a>
         </div>
     </div>
 </body>

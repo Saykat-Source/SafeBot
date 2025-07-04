@@ -9,6 +9,7 @@ import ChatArea from './components/ChatArea';
 import BottomNav from './components/BottomNav';
 import './App.css';
 import PromptEditor from "./PromptEditor";
+import PromptPractice from './components/PromptPractice';
 
 // Dummy components for each page (replace with your real content as you build)
 function HomePage() {
@@ -47,6 +48,7 @@ function App() {
           <Route path="/goals" element={<GoalsPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/admin" element={<PromptEditor />} /> {/* <-- Admin route for prompt editing */}
+          <Route path="/practice" element={<PromptPractice />} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
         <BottomNav />
