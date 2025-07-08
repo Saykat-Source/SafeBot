@@ -75,7 +75,26 @@ client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 def is_prompt_unbiased_keyword(prompt):
     flagged_words = [
         "only for men", "only for women", "rich people", "poor people",
-        "lazy", "stupid", "crazy", "normal people"
+        "lazy", "stupid", "crazy", "normal people", 
+        # Demographic/Income
+        "high-income", "low-income", "wealthy clients", "affluent customers", "only for rich", "only for poor",
+        "for the middle class", "for the upper class", "for the working class", "for the elite",
+        "for privileged clients", "for underprivileged clients",
+        # Age
+        "young professionals", "millennials", "seniors only", "retirees only", "for the elderly",
+        "for young people", "for children only", "for adults only",
+        # Employment/Status
+        "full-time employees only", "stable employment", "unemployed clients", "for business owners only",
+        "for students only", "for homemakers only",
+        # Lifestyle/Family
+        "who travel internationally", "frequent travelers", "for single clients", "for married clients",
+        "for customers without dependents", "for families only", "for parents only", "for people with no children",
+        # Tech/Ability
+        "tech-savvy", "digital natives", "for people comfortable with technology", "for those who prefer in-person banking",
+        # Location/Origin
+        "for local clients only", "for international clients only", "for urban customers", "for rural customers",
+        # Other
+        "exclusive to", "not available to", "restricted to", "only eligible for", "not suitable for", "not recommended for"
     ]
     prompt_lower = prompt.lower()
     print("DEBUG: Prompt being checked:", prompt_lower)
